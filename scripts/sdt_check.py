@@ -33,14 +33,14 @@ try:
     vmaas_file=open(dir+'\_vmaas.json')
     
 except:
-    print('File not found')
+    print(COLOR["RED"],'\n VMaaS SDT File not found in the directory',dir,COLOR["ENDC"])
     quit()
     
 ## Open BASE json files for reading
 try:
     base_file=open(dir+'\_base.json')
 except:
-    print('File not found')
+    print(COLOR["RED"],'\n Base Config SDT File not found in the directory',dir,COLOR["ENDC"])
     quit()
        
 
