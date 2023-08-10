@@ -316,7 +316,7 @@ else:
     print(COLOR["RED"],'\nDEVIATION - Expected iSCSI_B Network' ,'-', 'Network:172.28.24.0 and Subnet:255.255.248.0\n',COLOR["ENDC"]) 
 
 print(COLOR["BLUE"],'\nERE Details',COLOR["ENDC"]) 
-print('\nERE Version','   :',ere_version)
+print('\nERE Version :',ere_version)
 if (len(ere_version_list)<3):
     print(COLOR["RED"],'ERE Minor Version Missing\n',COLOR["ENDC"])
 else:
