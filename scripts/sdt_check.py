@@ -23,6 +23,11 @@ iSCSI_A_start=list()
 iSCSI_A_end=list()
 iSCSI_B_start=list()
 iSCSI_B_end=list()
+temp_domain=list()
+controller_domain=list()
+ere_version_list=list()
+
+
 
 ## Get the Directory location of file
 dir=input('Directory Location of the file : ')
@@ -56,9 +61,6 @@ def vmip(filename):
     temp2=temp2[1].strip('"')
     return temp2
 
-def prRed(skk): print("\033[91m {}\033[00m" .format(skk))
-def prGreen(skk): print("\033[92m {}\033[00m" .format(skk))
-
 
 ## Read each line from base jason
 for i, ln in enumerate(base_file, start=2):
@@ -75,7 +77,12 @@ for i, ln in enumerate(base_file, start=2):
             iSCSI_B_net=(linecache.getline(dir+'\_base.json', (i+7))).lstrip().rstrip().rstrip(',').split('"')[3]
             iSCSI_B_sub=(linecache.getline(dir+'\_base.json', (i+9))).lstrip().rstrip().rstrip(',').split('"')[3]
                      
-    #else:
+    elif '"domainSearchName":' in ln:
+            domain_base=(linecache.getline(dir+'\_base.json', (i-1))).lstrip().rstrip().rstrip(',').split('"')[3]
+    
+    elif '"primaryDnsIpAddress":' in ln:
+            dns_ip=(linecache.getline(dir+'\_base.json', (i-1))).lstrip().rstrip().rstrip(',').split('"')[3]
+    #        print(domain)
     #    print('\nBase Config jason do not have FS External subnet defined')
     #    quit()
         
@@ -84,22 +91,34 @@ for i, ln in enumerate(vmaas_file):
     if '"role": "ereController"' in ln:
         vm_name_ip['ere_Controller']=vmname("\_vmaas.json")
         vm_name_ip['ere_Controller_ip']=vmip("\_vmaas.json")
+        temp_domain=vm_name_ip['ere_Controller'].split('.')
+        controller_domain.append(temp_domain[1]+"."+temp_domain[2])
         
     elif '"role": "ereArbiter"' in ln:
         vm_name_ip['ere_Arbiter']=vmname("\_vmaas.json")
         vm_name_ip['ere_Arbiter_ip']=vmip("\_vmaas.json")
+        temp_domain=vm_name_ip['ere_Arbiter'].split('.')
+        controller_domain.append(temp_domain[1]+"."+temp_domain[2])
         
     elif '"role": "ereShadow"' in ln:
         vm_name_ip['ere_Shadow']=vmname("\_vmaas.json")
         vm_name_ip['ere_Shadow_ip']=vmip("\_vmaas.json")
+        temp_domain=vm_name_ip['ere_Shadow'].split('.')
+        controller_domain.append(temp_domain[1]+"."+temp_domain[2])
         
     elif '"role": "ereGateway"' in ln:
         gw_vm_list.append(vmname("\_vmaas.json"))
         gw_vm_ip_list.append(vmip("\_vmaas.json"))
+        #temp_domain=gw_vm_list.split('.')
+        #doamin(temp_domain)
+        #print(controller_domain)
         
     elif '"role": "ereSquid"' in ln:
         gw_vm_list.append(vmname("\_vmaas.json"))
         gw_vm_ip_list.append(vmip("\_vmaas.json"))
+        #temp_domain=gw_vm_list.split('.')
+        #doamin(temp_domain)
+        #print(controller_domain)
     
     elif '"cpBridgeInterface"' in ln:
         temp1=(linecache.getline(dir+'\_vmaas.json', (i+7))).lstrip().rstrip().split()[1].strip('"')
@@ -112,6 +131,15 @@ for i, ln in enumerate(vmaas_file):
         vm_name_ip['CaaS_FS_IP']=(linecache.getline(dir+'\_vmaas.json', (i+15))).lstrip().rstrip().rstrip(',').split()[1].strip('"')
         vm_name_ip['CaaS_FS_Subnet']=(linecache.getline(dir+'\_vmaas.json', (i+16))).lstrip().rstrip().rstrip(',').split()[1].strip('"')
         vm_name_ip['CaaS_FS_Gateway']=(linecache.getline(dir+'\_vmaas.json', (i+17))).lstrip().rstrip().rstrip(',').split()[1].strip('"')
+    
+    elif '"ereClusterName"' in ln:
+        ere_version=(linecache.getline(dir+'\_vmaas.json', (i-1))).lstrip().rstrip().rstrip(',').split('"')[3]
+        ere_version_list=(linecache.getline(dir+'\_vmaas.json', (i-1))).lstrip().rstrip().rstrip(',').split('"')[3].split('.')
+        ere_Cluster_Name=(linecache.getline(dir+'\_vmaas.json', (i+1))).lstrip().rstrip().rstrip(',').split('"')[3]
+        ere_Domain_Name=(linecache.getline(dir+'\_vmaas.json', (i+3))).lstrip().rstrip().rstrip(',').split('"')[3]
+        ere_Usr_Name=(linecache.getline(dir+'\_vmaas.json', (i+7))).lstrip().rstrip().rstrip(',').split('"')[3]
+        ere_Pwd_Name=(linecache.getline(dir+'\_vmaas.json', (i+8))).lstrip().rstrip().rstrip(',').split('"')[3]
+
         
     elif '"purpose": "glmetal_managed"' in ln:
         temp1=(linecache.getline(dir+'\_vmaas.json', (i+2))).lstrip().rstrip().rstrip(',').split('"')[3].strip('"')
@@ -247,6 +275,22 @@ if(external_vmaas==external_base):
 else:
     print(COLOR["RED"],'DEVIATION - Expect CaaS FS Gateway' ':' f"{external_base}{'.x'}",COLOR["ENDC"]) 
     
+print('Domain in Base Config', ':', domain_base)
+for i, wrd in enumerate(controller_domain): 
+    if(domain_base==wrd):
+        if (i==(len(controller_domain) - 1)):
+            print(COLOR["GREEN"],'Domain name in Base Config is same for all the Controllers in VMCaaS SDT\n',COLOR["ENDC"])
+        else:
+            continue
+    else:
+        print(COLOR["RED"],'DEVIATION - Expect Domain in VMCaaS for Controllers is :',domain_base,'\n',COLOR["ENDC"])
+        
+if (dns_ip is not None):
+    print('\nPrimary DNS set in Base Config is :', dns_ip)
+    print(COLOR["GREEN"],'Primary DNS is set \n',COLOR["ENDC"])
+else:
+    print(COLOR["RED"],'\nPrimary DNS is not set in Base Config\n',COLOR["ENDC"])
+        
 print(COLOR["BLUE"],'iSCSI_A Network Details',COLOR["ENDC"]) 
 print('Network Name','   :',iSCSI_A)
 print ('iSCSI_A Network',':',iSCSI_A_net)
@@ -270,3 +314,28 @@ if(iSCSI_B_sub=='255.255.248.0' and iSCSI_B_net=='172.28.24.0' and iSCSI_B_start
     print(COLOR["GREEN"],'iSCSI_B Network is Correct\n',COLOR["ENDC"])
 else:
     print(COLOR["RED"],'\nDEVIATION - Expected iSCSI_B Network' ,'-', 'Network:172.28.24.0 and Subnet:255.255.248.0\n',COLOR["ENDC"]) 
+
+print(COLOR["BLUE"],'\nERE Details',COLOR["ENDC"]) 
+print('\nERE Version','   :',ere_version)
+if (len(ere_version_list)<3):
+    print(COLOR["RED"],'ERE Minor Version Missing\n',COLOR["ENDC"])
+else:
+    print(COLOR["HEADER"],'Confirm ERE version with Team\n',COLOR["ENDC"])
+
+print('ERE Cluster Name :', ere_Cluster_Name)
+if (ere_Cluster_Name == 'gl-caas-ere-ha'):
+    print(COLOR["GREEN"],'ERE Cluster name is Correct\n',COLOR["ENDC"])
+else:
+    print(COLOR["RED"],'ERE Cluster name is non standard, Expected is gl-caas-ere-ha\n',COLOR["ENDC"])
+
+print('ERE Domain Name :', ere_Domain_Name)
+if (ere_Domain_Name == 'hpecplocal'):
+    print(COLOR["GREEN"],'ERE Domain name is Correct\n',COLOR["ENDC"])
+else:
+    print(COLOR["RED"],'ERE Domain name is non standard, Expected is hpecplocal\n',COLOR["ENDC"])
+    
+print('ERE Credentials :', ere_Usr_Name,'/',ere_Pwd_Name)
+if (ere_Usr_Name == 'admin' and ere_Pwd_Name == 'admin123'):
+    print(COLOR["GREEN"],'ERE Credentials are Correct\n',COLOR["ENDC"])
+else:
+    print(COLOR["RED"],'ERE Credentials are non standard, Expected is admin/admin123\n',COLOR["ENDC"])
