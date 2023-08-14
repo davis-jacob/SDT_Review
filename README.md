@@ -11,11 +11,11 @@ This script checks VMCaaS SDT and highlights any deviation from standard values
 
 ### Steps to install Airgap-Utility
 
-1.	Download the SDT files to a directory
-2.	Change the name of the VMCaaS and Base Config json files to _vmcaas and _base respectively
-3.	Download the sdt_check.py script
-4.	Open Comand promt and change the directory to the location where the script is downloaded
-5.	Run the script using the following command
+1.	Download the SDT files to a directory.
+2.	Change the name of the VMCaaS and Base Config json files to _vmcaas and _base respectively.
+3.	Download the sdt_check.py script from this repo.
+4.	Open Comand promt and change the directory to the location where the script is downloaded.
+5.	Run the script using the following command.
 ```bash
 py sdt_check.py
 ```
@@ -23,3 +23,4 @@ py sdt_check.py
 ```bash
 Directory Location of the file : C:\Users\jacobdav\OneDrive - Hewlett Packard Enterprise\Desktop\HPECP\HPECP\CP2.0\SDT\PCE-GLC\new\OneDrive_1_8-14-2023
 ```
+6. Any deviation from standard value will be highlighted in RED
